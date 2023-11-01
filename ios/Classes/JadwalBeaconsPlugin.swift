@@ -8,6 +8,9 @@ public class JadwalBeaconsPlugin: NSObject, FlutterPlugin {
     var rangingStreamHandler: RangingStreamHandler?
     var eventsStreamHandler: EventsStreamHandler?
 
+    var monitoredRegions: [CLBeaconRegion] = []
+    var rangingRegions: [CLBeaconIdentityConstraint] = []
+
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "jadwal_method_handler", binaryMessenger: registrar.messenger())
 
@@ -15,18 +18,15 @@ public class JadwalBeaconsPlugin: NSObject, FlutterPlugin {
 
         let rangingEventChannel = FlutterEventChannel(name: "jadwal_ranging_channel", binaryMessenger: registrar.messenger())
         let monitoringEventChannel = FlutterEventChannel(name: "jadwal_monitoring_chanel", binaryMessenger: registrar.messenger())
-        let eventsEventChannel = FlutterEventChannel(name: "jadwal_events_chanel", binaryMessenger: registrar.messenger())
 
         monitoringStreamHandler = MonitoringStreamHandler()
         rangingStreamHandler = RangingStreamHandler()
-        eventsStreamHandler = EventsStreamHandler()
 
         monitoringEventChannel?.jadwalBeaconsPlugin = instance
         rangingStreamHandler?.jadwalBeaconsPlugin = instance
 
         monitoringEventChannel.setStreamHandler(monitoringStreamHandler)
         rangingEventChannel.setStreamHandler(rangingStreamHandler)
-        eventsEventChannel.setStreamHandler(eventsStreamHandler)
 
         locationManager.delegate = self
 
@@ -42,29 +42,51 @@ public class JadwalBeaconsPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    func startMonitoring() {}
+    func startMonitoring() {
+        for region in monitoredRegions {
+            locationManager.startMonitoring(for: region)
+        }
+    }
 
-    func stopMonitoring() {}
+    func stopMonitoring() {
+        for region in monitoredRegions {
+            locationManager.stopMonitoring(for: region)
+        }
+    }
 
-    func startRanging() {}
+    func startRanging() {
+        for constraint in rangingRegions {
+            locationManager.startRangingBeacons(satisfying: constraint)
+        }
+    }
 
-    func stopRanging() {}
+    func stopRanging() {
+        for constraint in rangingRegions {
+            locationManager.stopRangingBeacons(satisfying: constraint)
+        }
+    }
 }
 
 extension JadwalBeaconsPlugin: CLLocationManagerDelegate {
-    func locationManager(_: CLLocationManager, didEnterRegion _: CLRegion) {
+    func locationManager(_: CLLocationManager, didEnterRegion region: CLRegion) {
         guard let sink = monitoringStreamHandler else { return }
+        let regionResult = ["event": "didEnterRegion", "proximityUUID": region.identifier]
+        sink.sendEvent(regionResult)
     }
 
-    func locationManager(_: CLLocationManager, didExitRegion _: CLRegion) {
+    func locationManager(_: CLLocationManager, didExitRegion region: CLRegion) {
         guard let sink = monitoringStreamHandler else { return }
+        let regionResult = ["event": "didExitRegion", "proximityUUID": region.identifier]
+        sink.sendEvent(regionResult)
     }
 
-    func locationManager(_: CLLocationManager, didStartMonitoringFor _: CLRegion) {
+    func locationManager(_: CLLocationManager, didStartMonitoringFor region: CLRegion) {
         guard let sink = rangingStreamHandler else { return }
+        let regionResult = ["event": "didStartMonitoringFor", "proximityUUID": region.identifier]
+        sink.sendEvent(regionResult)
     }
 
-    func locationManager(_: CLLocationManager, didRange _: [CLBeacon], satisfying _: CLBeaconIdentityConstraint) {
+    func locationManager(_: CLLocationManager, didRange beacons: [CLBeacon], satisfying _: CLBeaconIdentityConstraint) {
         guard let sink = rangingStreamHandler else { return }
     }
 
@@ -72,8 +94,10 @@ extension JadwalBeaconsPlugin: CLLocationManagerDelegate {
         guard let sink = rangingStreamHandler else { return }
     }
 
-    func locationManager(_: CLLocationManager, didDetermineState _: CLRegionState, for _: CLRegion) {
+    func locationManager(_: CLLocationManager, didDetermineState regionState: CLRegionState, for region: CLRegion) {
         guard let sink = eventsStreamHandler else { return }
+        let regionResult = ["event": "didDetermineState","state": JadwalUtils.parseState(regionState.rawValue),"proximityUUID": region.identifier]
+        sink.sendEvent(regionResult)
     }
 }
 
@@ -84,28 +108,32 @@ public class MonitoringStreamHandler: NSObject, FlutterStreamHandler {
     public func onListen(withArguments arguments: Any?, eventSink: @escaping FlutterEventSink) -> FlutterError? {
         self.eventSink = eventSink
 
-        var recivedRegions:[CLBeaconRegion] = []
+        guard let jadwalPlugin = jadwalBeaconsPlugin else { return nil }
 
         guard let regions = arguments as? [Any] else {
             return nil
         }
 
-        for reagionMap in regions {
-            guard let region = reagionMap as [String:Any] else {return nil}
-            
-            guard let uuidString = region["proximityUUID"] as String else {return nil}
+        for regionMap in regions {
+            guard let region = regionMap as [String: Any] else { return nil }
+
+            guard let uuidString = region["proximityUUID"] as String else { return nil }
 
             let uuid = UUID(uuidString: uuidString)
             let constraint = CLBeaconIdentityConstraint(uuid: uuid)
             let beaconRegion = CLBeaconRegion(beaconIdentityConstraint: constraint, identifier: uuid.uuidString)
-            recivedRegions.append(beaconRegion)
+            jadwalPlugin.monitoredRegions.append(beaconRegion)
         }
+
+        jadwalPlugin.startMonitoring()
 
         return nil
     }
 
     public func onCancel(withArguments _: Any?) -> FlutterError? {
         eventSink = nil
+        jadwalBeaconsPlugin?.monitoredRegions = []
+        jadwalBeaconsPlugin = nil
         return nil
     }
 
@@ -120,29 +148,32 @@ public class RangingStreamHandler: NSObject, FlutterStreamHandler {
 
     public func onListen(withArguments _: Any?, eventSink: @escaping FlutterEventSink) -> FlutterError? {
         self.eventSink = eventSink
+
+        guard let jadwalPlugin = jadwalBeaconsPlugin else { return nil }
+
+        guard let regions = arguments as? [Any] else {
+            return nil
+        }
+
+        for regionMap in regions {
+            guard let region = regionMap as [String: Any] else { return nil }
+
+            guard let uuidString = region["proximityUUID"] as String else { return nil }
+
+            let uuid = UUID(uuidString: uuidString)
+            let constraint = CLBeaconIdentityConstraint(uuid: uuid)
+            jadwalPlugin.rangingRegions.append(constraint)
+        }
+
+        jadwalPlugin.startRanging()
+
         return nil
     }
 
     public func onCancel(withArguments _: Any?) -> FlutterError? {
         eventSink = nil
-        return nil
-    }
-
-    func sendEvent(_ event: Any) {
-        eventSink?(event)
-    }
-}
-
-public class EventsStreamHandler: NSObject, FlutterStreamHandler {
-    var eventSink: FlutterEventSink?
-
-    public func onListen(withArguments _: Any?, eventSink: @escaping FlutterEventSink) -> FlutterError? {
-        self.eventSink = eventSink
-        return nil
-    }
-
-    public func onCancel(withArguments _: Any?) -> FlutterError? {
-        eventSink = nil
+        jadwalBeaconsPlugin?.rangingRegions = []
+        jadwalBeaconsPlugin = nil
         return nil
     }
 
