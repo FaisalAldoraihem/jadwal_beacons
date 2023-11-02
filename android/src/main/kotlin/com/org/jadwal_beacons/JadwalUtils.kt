@@ -60,13 +60,13 @@ class JadwalUtils {
 
             val major = map["major"]
 
-            if (major is Int) {
+            if (major != null && major is Int) {
                 identifiers.add(Identifier.fromInt(major))
             }
 
             val minor = map["minor"]
 
-            if (minor is Int) {
+            if (minor != null && minor is Int) {
                 identifiers.add(Identifier.fromInt(minor))
             }
 

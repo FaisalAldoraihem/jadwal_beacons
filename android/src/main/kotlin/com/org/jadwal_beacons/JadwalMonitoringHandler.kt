@@ -80,7 +80,7 @@ class JadwalMonitoringHandler(private val beaconManager: BeaconManager) {
             if (monitoringEventSink != null) {
                 val map: MutableMap<String, Any> = HashMap()
                 map["event"] = "didEnterRegion"
-                map["region"] = JadwalUtils.regionToMap(region)
+                map["proximityUUID"] = region.uniqueId
                 handler.post {
                     monitoringEventSink?.success(map)
                 }
@@ -91,7 +91,7 @@ class JadwalMonitoringHandler(private val beaconManager: BeaconManager) {
             if (monitoringEventSink != null) {
                 val map: MutableMap<String, Any> = HashMap()
                 map["event"] = "didExitRegion"
-                map["region"] = JadwalUtils.regionToMap(region)
+                map["proximityUUID"] = region.uniqueId
                 handler.post {
                     monitoringEventSink?.success(map)
                 }
@@ -103,7 +103,7 @@ class JadwalMonitoringHandler(private val beaconManager: BeaconManager) {
                 val map: MutableMap<String, Any> = HashMap()
                 map["event"] = "didDetermineStateForRegion"
                 map["state"] = JadwalUtils.parseState(state)
-                map["region"] = JadwalUtils.regionToMap(region)
+                map["proximityUUID"] = region.uniqueId
                 handler.post {
                     monitoringEventSink?.success(map)
                 }

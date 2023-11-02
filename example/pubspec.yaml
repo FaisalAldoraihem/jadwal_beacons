@@ -17,6 +17,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  get_storage: 2.1.1
+  logger: ^2.0.2+1
+
   jadwal_beacons:
     # When depending on this package from a real application you should use:
     #   jadwal_beacons: ^x.y.z
