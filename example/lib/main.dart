@@ -6,9 +6,14 @@ import 'package:get_storage/get_storage.dart';
 import 'package:jadwal_beacons/jadwal_beacons.dart';
 import 'package:jadwal_beacons/jadwal_region.dart';
 import 'package:logger/logger.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 Future<void> main() async {
   await GetStorage.init();
+  await Permission.location.request();
+  await Permission.bluetoothScan.request();
+  await Permission.bluetooth.request();
+
   runApp(const MyApp());
 }
 
@@ -22,15 +27,22 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
   final _jadwalBeaconsPlugin = JadwalBeacons();
+  String? event = "";
+  String? uuid = "";
+  String? state = "";
 
   @override
   void initState() {
     super.initState();
     final storage = GetStorage();
 
-    Logger().w("${storage.read("event")}");
-    Logger().w("${storage.read("uuid")}");
-    Logger().w("${storage.read("state")}");
+    event = storage.read("event");
+    uuid = storage.read("uuid");
+    state = storage.read("state");
+
+    Logger().w(event);
+    Logger().w(uuid);
+    Logger().w(state);
 
     _jadwalBeaconsPlugin.monitorForBeacons([
       JadwalRegion(
@@ -38,7 +50,7 @@ class _MyAppState extends State<MyApp> {
           proximityUUID: "18ee1516-016b-4bec-ad96-bcb96d166e97")
     ]).listen((event) {
       GetStorage().write('event', event.event);
-      if(event.state != null) {
+      if (event.state != null) {
         GetStorage().write('state', event.state);
       }
       GetStorage().write('uuid', event.uuid);
@@ -53,7 +65,15 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text('Event:\n ${event ?? ""}',textAlign: TextAlign.center,),
+              Text('UUID:\n ${uuid ?? ""}',textAlign: TextAlign.center),
+              Text('STATE:\n ${state ?? ""}',textAlign: TextAlign.center),
+            ],
+          ),
         ),
       ),
     );

@@ -28,9 +28,9 @@ struct JadwalUtils {
     }
 
     static func parseState(state: Int) -> String {
-        if state == CLRegionState.inside {
+        if state == CLRegionState.inside.rawValue {
             return "INSIDE"
-        } else if state == CLRegionState.outside {
+        } else if state == CLRegionState.outside.rawValue {
             return "OUTSIDE"
         } else {
             return "UNKNOWN"
