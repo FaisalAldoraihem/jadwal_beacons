@@ -20,6 +20,8 @@ dependencies:
   get_storage: 2.1.1
   logger: ^2.0.2+1
   permission_handler: ^11.0.1
+  workmanager: ^0.5.2
+  flutter_reactive_ble: ^5.2.0
 
   jadwal_beacons:
     # When depending on this package from a real application you should use:

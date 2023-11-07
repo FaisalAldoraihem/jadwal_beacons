@@ -9,6 +9,14 @@ PODS:
     - FlutterMacOS
   - permission_handler_apple (9.1.1):
     - Flutter
+  - Protobuf (3.24.4)
+  - reactive_ble_mobile (0.0.1):
+    - Flutter
+    - Protobuf (~> 3.5)
+    - SwiftProtobuf (~> 1.0)
+  - SwiftProtobuf (1.24.0)
+  - workmanager (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
@@ -16,6 +24,13 @@ DEPENDENCIES:
   - jadwal_beacons (from `.symlinks/plugins/jadwal_beacons/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - reactive_ble_mobile (from `.symlinks/plugins/reactive_ble_mobile/ios`)
+  - workmanager (from `.symlinks/plugins/workmanager/ios`)
+
+SPEC REPOS:
+  trunk:
+    - Protobuf
+    - SwiftProtobuf
 
 EXTERNAL SOURCES:
   Flutter:
@@ -28,6 +43,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
+  reactive_ble_mobile:
+    :path: ".symlinks/plugins/reactive_ble_mobile/ios"
+  workmanager:
+    :path: ".symlinks/plugins/workmanager/ios"
 
 SPEC CHECKSUMS:
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
@@ -35,6 +54,10 @@ SPEC CHECKSUMS:
   jadwal_beacons: d8fd33926283cd34723e11ebc67da703fc7eb6bc
   path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
   permission_handler_apple: e76247795d700c14ea09e3a2d8855d41ee80a2e6
+  Protobuf: 351e9022fe13a6e2af00e9aefc22077cb88520f8
+  reactive_ble_mobile: 9ce6723d37ccf701dbffd202d487f23f5de03b4c
+  SwiftProtobuf: bcfd2bc231cf9ae552cdc7c4e877bd3b41fe57b1
+  workmanager: 0afdcf5628bbde6924c21af7836fed07b42e30e6
 
 PODFILE CHECKSUM: a57f30d18f102dd3ce366b1d62a55ecbef2158e5
 

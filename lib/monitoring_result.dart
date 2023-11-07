@@ -1,20 +1,23 @@
-class MonitoringResult {
-  String uuid;
-  String event;
+class BeaconResult {
+  String? uuid;
+  String? event;
   String? state;
+  Map<dynamic,dynamic>? beacons;
 
-  MonitoringResult({
+  BeaconResult({
     required this.uuid,
     required this.event,
     required this.state,
+    required this.beacons
   });
 
   // Static method to create an instance of MonitoringResult from a map.
-  static MonitoringResult fromMap(Map<dynamic, dynamic> map) {
-    return MonitoringResult(
-      uuid: map['proximityUUID'] ?? '',
-      event: map['event'] ?? '',
+  static BeaconResult fromMap(Map<dynamic, dynamic> map) {
+    return BeaconResult(
+      uuid: map['proximityUUID'],
+      event: map['event'],
       state: map['state'],
+      beacons:  map['beacons']
     );
   }
 
@@ -24,11 +27,12 @@ class MonitoringResult {
       'uuid': uuid,
       'event': event,
       'state': state,
+      'beacons': beacons
     };
   }
 
   @override
   String toString() {
-    return 'MonitoringResult{uuid: $uuid, event: $event, state: $state}';
+    return 'BeaconResult{uuid: $uuid, event: $event, state: $state, beacons: ${beacons.toString()}';
   }
 }

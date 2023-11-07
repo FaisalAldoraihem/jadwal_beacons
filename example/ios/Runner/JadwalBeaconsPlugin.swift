@@ -196,3 +196,43 @@ public class RangingStreamHandler: NSObject, FlutterStreamHandler {
         return nil
     }
 }
+
+struct JadwalUtils {
+    static func dictFromCLBeacon(beacon: CLBeacon) -> [String: Any] {
+        var proximity = ""
+
+        switch beacon.proximity {
+        case .unknown:
+            proximity = "unknown"
+        case .immediate:
+            proximity = "immediate"
+        case .near:
+            proximity = "near"
+        case .far:
+            proximity = "far"
+        @unknown default:
+            proximity = "unknown"
+        }
+
+        var beaconData: [String: Any] = [:]
+
+        beaconData["proximityUUID"] = beacon.uuid
+        beaconData["major"] = beacon.major
+        beaconData["minor"] = beacon.minor
+        beaconData["rssi"] = beacon.rssi
+        beaconData["accuracy"] = String(format: "%.2f", beacon.accuracy)
+        beaconData["proximity"] = proximity
+
+        return beaconData
+    }
+
+    static func parseState(state: Int) -> String {
+        if state == CLRegionState.inside.rawValue {
+            return "INSIDE"
+        } else if state == CLRegionState.outside.rawValue {
+            return "OUTSIDE"
+        } else {
+            return "UNKNOWN"
+        }
+    }
+}
